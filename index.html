@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#fff6f2" />
+<meta name="description" content="A tiny romantic mission. One mistake. One apology." />
+<title>Mission: Make Her Forgive Me ❤️</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!--
+  ============================================================================
+  DEPLOYMENT (takes ~30 seconds, any of these are free)
+  ----------------------------------------------------------------------------
+  GitHub Pages : push this folder to a repo  ->  Settings > Pages >
+                 Deploy from a branch / main / (root)  ->  Save.
+  Netlify      : drag & drop this folder at https://app.netlify.com/drop
+  Vercel       : import the repo  ->  Framework Preset = "Other"  ->  Deploy.
+  ============================================================================
+
+  HOW TO PERSONALISE  (everything is in the CONFIG object inside the JavaScript
+  block at the bottom of this file — search for "CONFIG"):
+
+    herName ......... her name, used across the story
+    myName .......... your name
+    apology ......... your own apology words (the final speech)
+    promises ........ the "I promise" lines in the NO-button chase
+    photos .......... your pictures + captions for the gallery
+    musicUrl ........ optional mp3 url (if empty, soft music is GENERATED in
+                       the browser with the Web Audio API, so nothing can break)
+  ============================================================================
+-->
+
+<style>
+/* ===========================================================================
+   1. THEME TOKENS  — change these to recolour the whole site
+   =========================================================================== */
+:root{
+  --cream:        #fff8f4;
+  --cream-2:      #fdf0e8;
+  --paper:        #ffffff;
+  --pink-50:      #fff2f6;
+  --pink-100:     #ffe4ee;
+  --pink-200:     #ffcadd;
+  --pink-300:     #f8a8c6;
+  --pink-400:     #f07ba6;
+  --rose:         #e05a89;
+  --plum:         #7c4a5e;
+  --ink:          #4b303b;
+  --muted:        #95727f;
+  --gold:         #d6a06a;
+
+  --grad-soft: linear-gradient(150deg, var(--pink-100) 0%, #ffeef2 45%, var(--cream-2) 100%);
+  --grad-btn:  linear-gradient(140deg, #ff9dbb 0%, var(--rose) 55%, #cf4a7c 100%);
+
+  --r-lg: 30px;
+  --r-md: 20px;
+  --r-sm: 14px;
+
+  --shadow-soft: 0 18px 44px -22px rgba(124,74,94,.42);
+  --shadow-lift: 0 10px 26px -14px rgba(224,90,137,.55);
+
+  --ease: cubic-bezier(.22,.9,.28,1);
+
+  --f-display: "Cormorant Garamond", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --f-body: "Quicksand", ui-rounded, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+
+  --heart-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+html,body{ height:100%; margin:0; }
+body{
+  position:fixed; inset:0; overflow:hidden;
+  font-family:var(--f-body);
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 620px at 12% -8%,  #ffe9f1 0%, rgba(255,233,241,0) 62%),
+    radial-gradient(900px  560px at 92% 4%,    #fff0e2 0%, rgba(255,240,226,0) 58%),
+    radial-gradient(1000px 700px at 50% 112%,  #fdeaf2 0%, rgba(253,234,242,0) 60%),
+    linear-gradient(180deg, var(--cream) 0%, var(--cream-2) 55%, #fdf4ef 100%);
+  -webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased;
+  touch-action:manipulation;
+  user-select:none; -webkit-user-select:none;
+}
+
+button{ font:inherit; color:inherit; border:0; background:none; cursor:pointer; }
+
+/* ===========================================================================
+   2. BACKDROP — animated sheen + ambient hearts
+   =========================================================================== */
+.bg-sheen{
+  position:fixed; inset:-20%;
+  background:linear-gradient(115deg, rgba(255,255,255,0) 38%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 62%);
+  transform:translate3d(-40%,0,0);
+  animation:sheen 16s linear infinite;
+  pointer-events:none; z-index:0;
+}
+@keyframes sheen{ to{ transform:translate3d(40%,0,0); } }
+
+.ambient{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.ambient .heart-icon{
+  position:absolute; opacity:0;
+  animation:drift linear infinite;
+}
+@keyframes drift{
+  0%   { opacity:0; transform:translate3d(0,12vh,0) rotate(0deg) scale(.7); }
+  12%  { opacity:.42; }
+  85%  { opacity:.26; }
+  100% { opacity:0; transform:translate3d(var(--dx,20px),-118vh,0) rotate(320deg) scale(1.05); }
+}
+
+/* ===========================================================================
+   3. UTILITIES
+   =========================================================================== */
+.heart-icon{
+  display:inline-block; width:1em; height:1em; vertical-align:-.12em;
+  background:var(--rose);
+  -webkit-mask:var(--heart-mask) center/contain no-repeat;
+          mask:var(--heart-mask) center/contain no-repeat;
+}
+.heart-icon.cream{ background:var(--pink-200); }
+.heart-icon.gold { background:var(--gold); }
+
+.shake{ animation:shake .46s var(--ease); }
+@keyframes shake{
+  10%,90%{ transform:translateX(-2px); }
+  20%,80%{ transform:translateX(4px); }
+  30%,50%,70%{ transform:translateX(-8px); }
+  40%,60%{ transform:translateX(8px); }
+}
+
+/* the NO button is centred with translateX(-50%); the generic .shake
+   keyframes would wipe that out, so it gets its own that keeps the -50% */
+.ask-zone .btn.no.shake{ animation:shakeNo .46s var(--ease); }
+@keyframes shakeNo{
+  10%,90%{ transform:translateX(calc(-50% - 2px)); }
+  20%,80%{ transform:translateX(calc(-50% + 4px)); }
+  30%,50%,70%{ transform:translateX(calc(-50% - 8px)); }
+  40%,60%{ transform:translateX(calc(-50% + 8px)); }
+}
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* ===========================================================================
+   4. AUDIO BUTTON
+   =========================================================================== */
+.audio-btn{
+  position:fixed; z-index:60;
+  top:calc(12px + env(safe-area-inset-top)); right:12px;
+  width:46px; height:46px; border-radius:50%;
+  display:grid; place-items:center; gap:2px;
+  background:rgba(255,255,255,.78);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:var(--shadow-lift);
+  transition:transform .25s var(--ease);
+}
+.audio-btn:active{ transform:scale(.9); }
+.audio-btn .eq{ display:flex; align-items:flex-end; gap:2.5px; height:15px; }
+.audio-btn .eq i{
+  width:2.5px; height:4px; border-radius:2px; background:var(--rose);
+  transform-origin:bottom;
+}
+.audio-btn.is-on .eq i{ animation:eq .9s ease-in-out infinite; }
+.audio-btn .eq i:nth-child(2){ animation-delay:.16s; }
+.audio-btn .eq i:nth-child(3){ animation-delay:.32s; }
+.audio-btn .eq i:nth-child(4){ animation-delay:.08s; }
+@keyframes eq{ 0%,100%{ height:4px; } 50%{ height:15px; } }
+.audio-btn .mute-slash{
+  position:absolute; width:22px; height:2px; border-radius:2px;
+  background:var(--rose); transform:rotate(-45deg);
+}
+.audio-btn.is-on .mute-slash{ display:none; }
+
+/* ===========================================================================
+   5. HUD — global hearts progress
+   =========================================================================== */
+.hud{
+  position:fixed; z-index:55;
+  top:calc(12px + env(safe-area-inset-top)); left:12px;
+  display:flex; align-items:center; gap:9px;
+  padding:8px 14px 8px 12px; border-radius:999px;
+  background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:var(--shadow-lift);
+  font-size:.78rem; font-weight:600; letter-spacing:.02em; color:var(--plum);
+  opacity:0; transform:translateY(-10px);
+  transition:opacity .4s var(--ease), transform .4s var(--ease);
+}
+.hud.is-shown{ opacity:1; transform:none; }
+.hud .heart-icon{ font-size:1rem; }
+.hud .count{ font-variant-numeric:tabular-nums; }
+.hud .pulse{ animation:pulse .55s var(--ease); }
+@keyframes pulse{ 0%{ transform:scale(1);} 45%{ transform:scale(1.22);} 100%{ transform:scale(1);} }
+
+/* ===========================================================================
+   6. STAGE + SCREENS
+   =========================================================================== */
+.stage{ position:fixed; inset:0; z-index:10; }
+
+.screen{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  padding:calc(74px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom));
+  overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transform:translate3d(0,20px,0) scale(.985);
+  transition:opacity .5s var(--ease), transform .5s var(--ease), visibility .5s;
+}
+.screen.is-active{ opacity:1; visibility:visible; pointer-events:auto; transform:none; }
+.screen__inner{ width:100%; max-width:560px; margin:auto; text-align:center; }
+
+.screen.is-active .anim{ animation:rise .62s var(--ease) both; animation-delay:calc(var(--d,0) * 85ms + 90ms); }
+@keyframes rise{ from{ opacity:0; transform:translate3d(0,18px,0); } to{ opacity:1; transform:none; } }
+
+/* ===========================================================================
+   7. CARD + TYPE
+   =========================================================================== */
+.card{
+  position:relative;
+  padding:30px 24px 28px;
+  border-radius:var(--r-lg);
+  background:rgba(255,255,255,.72);
+  -webkit-backdrop-filter:blur(16px) saturate(1.25); backdrop-filter:blur(16px) saturate(1.25);
+  border:1px solid rgba(255,255,255,.95);
+  box-shadow:var(--shadow-soft);
+  overflow:hidden;
+}
+.card::before{
+  content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px;
+  background:linear-gradient(150deg, rgba(255,255,255,.95), rgba(248,168,198,.55) 45%, rgba(255,255,255,.9));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  pointer-events:none;
+}
+
+.mission-tag{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:7px 15px; border-radius:999px;
+  background:linear-gradient(135deg, var(--pink-100), #ffe9ef);
+  border:1px solid var(--pink-200);
+  color:var(--rose); font-size:.7rem; font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase;
+}
+.mission-tag.solid{
+  background:var(--grad-btn); color:#fff; border-color:transparent;
+  box-shadow:var(--shadow-lift);
+}
+
+h1,h2,h3{ font-family:var(--f-display); font-weight:600; margin:0; letter-spacing:.005em; }
+.display{
+  font-size:clamp(2.5rem, 12vw, 4rem);
+  line-height:1.03; color:var(--plum);
+}
+.display em{ font-style:italic; color:var(--rose); }
+h2.title{ font-size:clamp(1.85rem, 8.4vw, 2.7rem); line-height:1.12; color:var(--plum); }
+h3.sub{ font-size:clamp(1.15rem, 5.4vw, 1.4rem); color:var(--rose); }
+p.lead{ font-size:clamp(1rem, 4.2vw, 1.1rem); line-height:1.65; color:var(--muted); margin:0; }
+p.lead.soft{ color:var(--plum); }
+.rule{
+  width:66px; height:1px; margin:20px auto;
+  background:linear-gradient(90deg, transparent, var(--pink-300), transparent);
+}
+.note{
+  font-size:.86rem; color:var(--muted); font-style:italic;
+}
+.big-heart{ font-size:clamp(2.6rem, 14vw, 3.6rem); }
+
+/* ===========================================================================
+   8. BUTTONS
+   =========================================================================== */
+.btn{
+  position:relative;
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  min-height:54px; padding:15px 30px;
+  border-radius:999px; font-weight:700; font-size:1rem; letter-spacing:.01em;
+  color:#fff; background:var(--grad-btn);
+  box-shadow:var(--shadow-lift);
+  transition:transform .18s var(--ease), box-shadow .25s var(--ease), filter .25s var(--ease);
+  overflow:hidden;
+}
+.btn::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.42) 50%, transparent 70%);
+  transform:translateX(-120%); transition:transform .7s var(--ease);
+}
+.btn:active{ transform:scale(.955); }
+.btn:hover::after{ transform:translateX(120%); }
+.btn.ghost{
+  color:var(--plum); background:rgba(255,255,255,.9);
+  border:1.5px solid var(--pink-200); box-shadow:var(--shadow-soft);
+}
+.btn.small{ min-height:46px; padding:11px 22px; font-size:.9rem; }
+.btn:focus-visible{ outline:3px solid var(--pink-300); outline-offset:3px; }
+.btn-row{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:26px; }
+
+/* ===========================================================================
+   9. LEVEL 1 — catch the hearts
+   =========================================================================== */
+.progress-pill{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:10px 20px; border-radius:999px;
+  background:rgba(255,255,255,.85); border:1px solid var(--pink-200);
+  box-shadow:var(--shadow-soft);
+  font-weight:700; color:var(--plum);
+  font-variant-numeric:tabular-nums;
+}
+.progress-pill .heart-icon{ font-size:1.15rem; animation:pulse .5s var(--ease); }
+
+.catch-zone{
+  position:relative; width:100%;
+  height:clamp(260px, 52vh, 460px);
+  margin:18px auto 0;
+  border-radius:var(--r-md);
+  overflow:hidden;
+}
+.fly-heart{
+  position:absolute; top:-70px;
+  width:var(--s); height:var(--s);
+  background:var(--c);
+  -webkit-mask:var(--heart-mask) center/contain no-repeat;
+          mask:var(--heart-mask) center/contain no-repeat;
+  cursor:pointer; z-index:2;
+  animation:fall var(--d) linear forwards, sway var(--sd) ease-in-out infinite alternate;
+  filter:drop-shadow(0 6px 12px rgba(224,90,137,.32));
+  touch-action:manipulation;
+}
+@keyframes fall{
+  from{ transform:translate3d(0,-8vh,0) rotate(0deg); }
+  to  { transform:translate3d(var(--dx),var(--dy),0) rotate(var(--dr)); }
+}
+@keyframes sway{ from{ margin-left:-9px; } to{ margin-left:9px; } }
+.fly-heart.is-got{ animation:pop .34s var(--ease) forwards; pointer-events:none; }
+@keyframes pop{
+  0%  { transform:scale(1); opacity:1; }
+  45% { transform:scale(1.75); opacity:.95; }
+  100%{ transform:scale(.2) translateY(-40px); opacity:0; }
+}
+.fly-heart.is-leaving{ animation:vanish .3s ease forwards; pointer-events:none; }
+@keyframes vanish{ to{ opacity:0; transform:scale(.5); } }
+
+/* ===========================================================================
+   10. LEVEL 2 — quiz
+   =========================================================================== */
+.quiz-head{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px; }
+.q-dots{ display:flex; gap:7px; }
+.q-dots i{
+  width:9px; height:9px; border-radius:50%;
+  background:var(--pink-200); transition:all .35s var(--ease);
+}
+.q-dots i.on{ background:var(--rose); transform:scale(1.25); }
+.q-dots i.ok{ background:var(--gold); }
+
+.q-text{
+  font-family:var(--f-display); font-size:clamp(1.35rem, 6.4vw, 1.8rem);
+  line-height:1.3; color:var(--plum); margin:12px 0 22px;
+}
+.options{ display:grid; gap:11px; }
+.opt{
+  position:relative; text-align:left;
+  width:100%; min-height:56px; padding:15px 18px 15px 52px;
+  border-radius:var(--r-sm);
+  background:rgba(255,255,255,.88);
+  border:1.5px solid var(--pink-100);
+  box-shadow:0 6px 18px -14px rgba(124,74,94,.5);
+  font-size:.98rem; line-height:1.45; color:var(--ink);
+  transition:transform .18s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+}
+.opt .bullet{
+  position:absolute; left:16px; top:50%; transform:translateY(-50%);
+  width:22px; height:22px; border-radius:50%;
+  display:grid; place-items:center;
+  background:var(--pink-100); color:var(--rose);
+  font-size:.72rem; font-weight:700;
+  transition:all .25s var(--ease);
+}
+.opt:active{ transform:scale(.985); }
+.opt.is-right{ border-color:var(--rose); background:linear-gradient(135deg,#fff,#ffeef4); }
+.opt.is-right .bullet{ background:var(--rose); color:#fff; }
+.opt.is-wrong{ border-color:#e8b6b6; background:#fff6f6; opacity:.85; }
+.opt[disabled]{ pointer-events:none; }
+
+.verdict{
+  min-height:30px; margin-top:16px;
+  font-size:.95rem; font-weight:600; color:var(--rose);
+  opacity:0; transform:translateY(6px); transition:all .35s var(--ease);
+}
+.verdict.is-shown{ opacity:1; transform:none; }
+.verdict.moody{ color:var(--muted); }
+
+/* ===========================================================================
+   11. LEVEL 3 — punishment cards
+   =========================================================================== */
+.choices{ display:grid; gap:12px; }
+.choice{
+  display:flex; align-items:center; gap:14px; text-align:left;
+  width:100%; padding:16px 18px; border-radius:var(--r-md);
+  background:rgba(255,255,255,.88); border:1.5px solid var(--pink-100);
+  box-shadow:0 8px 22px -18px rgba(124,74,94,.55);
+  transition:transform .18s var(--ease), border-color .25s var(--ease);
+}
+.choice:active{ transform:scale(.98); }
+.choice .emoji{ font-size:1.7rem; line-height:1; }
+.choice .txt{ font-weight:600; font-size:1rem; color:var(--ink); }
+.choice .key{
+  margin-left:auto; flex:none;
+  width:26px; height:26px; border-radius:8px; display:grid; place-items:center;
+  background:var(--pink-100); color:var(--rose);
+  font-size:.75rem; font-weight:700;
+}
+.choice.is-picked{ border-color:var(--rose); background:linear-gradient(135deg,#fff,#ffe9f1); }
+
+.reply{
+  margin-top:20px; padding:20px 18px; border-radius:var(--r-md);
+  background:linear-gradient(135deg,#fff6fa,#fff1ec);
+  border:1px dashed var(--pink-200);
+  font-family:var(--f-display); font-size:clamp(1.2rem, 5.6vw, 1.5rem);
+  line-height:1.4; color:var(--plum);
+}
+
+/* ===========================================================================
+   12. FINAL — the forgiveness test
+   =========================================================================== */
+.letter{ text-align:left; }
+.letter p{
+  font-family:var(--f-display);
+  font-size:clamp(1.12rem, 5.1vw, 1.42rem);
+  line-height:1.62; color:var(--plum); margin:0 0 15px;
+}
+.letter p.dim{ color:var(--muted); }
+.letter p.big{ font-size:clamp(1.35rem, 6.6vw, 1.85rem); color:var(--rose); font-style:italic; }
+
+.ask-zone{
+  position:relative;
+  height:clamp(190px, 34vh, 250px);
+  margin-top:6px;
+}
+.ask-zone .btn{ position:absolute; left:50%; top:0; transform:translateX(-50%); }
+.ask-zone .btn.yes{ top:0; animation:breathe 2.6s ease-in-out infinite; }
+.ask-zone .btn.no{
+  top:96px; white-space:normal; max-width:calc(100% - 12px);
+  background:linear-gradient(140deg,#b7a4ad,#8d7783);
+  box-shadow:0 10px 24px -16px rgba(60,40,50,.8);
+  transition:top .34s var(--ease), left .34s var(--ease), transform .18s var(--ease), background .3s var(--ease);
+}
+.ask-zone .btn.no:active{ transform:translateX(-50%) scale(.94); }
+@keyframes breathe{ 0%,100%{ transform:translateX(-50%) scale(1); } 50%{ transform:translateX(-50%) scale(1.045); } }
+
+.plea{
+  min-height:44px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--f-display); font-size:clamp(1.15rem,5.4vw,1.5rem);
+  color:var(--rose); font-style:italic;
+}
+
+/* ===========================================================================
+   13. FORGIVEN SCREEN + photo gallery
+   =========================================================================== */
+.wishlist{ display:grid; gap:9px; margin:20px auto 0; max-width:420px; text-align:left; }
+.wish{
+  display:flex; align-items:center; gap:13px;
+  padding:13px 17px; border-radius:var(--r-sm);
+  background:rgba(255,255,255,.85); border:1px solid var(--pink-100);
+  font-size:.97rem; color:var(--ink);
+}
+.wish .emoji{ font-size:1.35rem; }
+.wish b{ color:var(--rose); }
+
+.gallery{ display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:11px; margin-top:20px; }
+.shot{
+  position:relative; aspect-ratio:1/1; border-radius:var(--r-sm);
+  overflow:hidden; background:var(--grad-soft);
+  border:1px solid var(--pink-100);
+  box-shadow:var(--shadow-soft);
+}
+.shot img{ width:100%; height:100%; object-fit:cover; display:block; }
+.shot figcaption{
+  position:absolute; left:0; right:0; bottom:0;
+  padding:16px 10px 8px;
+  background:linear-gradient(to top, rgba(60,30,45,.62), rgba(60,30,45,0));
+  color:#fff; font-size:.72rem; line-height:1.3;
+}
+.shot.empty{
+  display:grid; place-items:center; gap:6px;
+  border:1.5px dashed var(--pink-200); background:rgba(255,255,255,.5);
+  box-shadow:none; color:var(--pink-300); text-align:center; padding:10px;
+}
+.shot.empty .heart-icon{ font-size:1.7rem; background:var(--pink-200); }
+.shot.empty span{ font-size:.68rem; color:var(--muted); line-height:1.35; }
+
+.badge{
+  display:inline-flex; align-items:center; gap:9px;
+  padding:11px 22px; border-radius:999px;
+  background:var(--grad-btn); color:#fff;
+  font-weight:700; font-size:.88rem; letter-spacing:.06em; text-transform:uppercase;
+  box-shadow:var(--shadow-lift);
+}
+
+/* ===========================================================================
+   14. FX CANVAS
+   =========================================================================== */
+#fx{ position:fixed; inset:0; z-index:70; pointer-events:none; }
+
+/* ===========================================================================
+   15. RESPONSIVE + ACCESSIBILITY
+   =========================================================================== */
+@media (max-width:400px){
+  .card{ padding:24px 18px 22px; }
+  .btn{ width:100%; }
+  .btn-row .btn{ width:100%; }
+  .ask-zone .btn{ width:auto; padding:14px 26px; }
+  .hud{ padding:7px 12px 7px 10px; font-size:.72rem; }
+}
+@media (min-height:760px){
+  .catch-zone{ height:clamp(300px, 46vh, 520px); }
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.15s !important;
+  }
+  .bg-sheen{ display:none; }
+}
+</style>
+</head>
+
+<body>
+<div class="bg-sheen" aria-hidden="true"></div>
+<div class="ambient" id="ambient" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<button class="audio-btn is-on" id="audioBtn" aria-pressed="true" aria-label="Mute music">
+  <span class="mute-slash" aria-hidden="true"></span>
+  <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+</button>
+
+<div class="hud" id="hud" role="status" aria-live="polite">
+  <span class="heart-icon" aria-hidden="true"></span>
+  <span>Hearts <span class="count" id="hudCount">0</span>/<span id="hudMax">12</span></span>
+</div>
+
+<main class="stage" id="stage">
+
+  <!-- ===================== SCREEN 1 — LANDING ===================== -->
+  <section class="screen" data-screen="landing" aria-hidden="true">
+    <div class="screen__inner">
+      <div class="card">
+        <span class="mission-tag anim" style="--d:0">🚨 Very Important Mission 🚨</span>
+
+        <h1 class="display anim" style="--d:1; margin-top:18px">
+          Someone has made<br> a <em>terrible</em> mistake…
+        </h1>
+
+        <div class="rule anim" style="--d:2" role="presentation"></div>
+
+        <p class="lead anim" style="--d:3">
+          Someone who loves you very much has come here to say…
+        </p>
+
+        <p class="lead soft anim" style="--d:4; margin-top:16px; font-family:var(--f-display); font-size:clamp(1.5rem,7vw,2.1rem); color:var(--rose); font-style:italic">
+          I’m Sorry. 🥺❤️
+        </p>
+
+        <p class="lead anim" style="--d:5; margin-top:22px">
+          Before you decide whether to forgive him, you have to complete one <b>tiny</b> mission.
+        </p>
+
+        <div class="btn-row anim" style="--d:6">
+          <button class="btn" data-go="level1">Start the mission ❤️</button>
+        </div>
+      </div>
+      <p class="note anim" style="--d:7; margin-top:16px">Sound on is highly recommended 🎵</p>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 2 — LEVEL 1 ===================== -->
+  <section class="screen" data-screen="level1" aria-hidden="true">
+    <div class="screen__inner">
+      <div class="card">
+        <span class="mission-tag anim" style="--d:0">Level 1 of 4</span>
+        <h2 class="title anim" style="--d:1; margin-top:16px">Level 1: Catch My Hearts</h2>
+        <p class="lead anim" style="--d:2; margin-top:10px">Catch <b>7 hearts</b> to continue ❤️</p>
+
+        <div class="anim" style="--d:3">
+          <div class="progress-pill" id="l1Pill" role="status" aria-live="polite">
+            <span class="heart-icon" aria-hidden="true"></span>
+            <span>Hearts collected: <span id="l1Count">0</span>/7</span>
+          </div>
+        </div>
+
+        <div class="catch-zone anim" id="catchZone" style="--d:4" aria-label="Falling hearts, tap to collect"></div>
+
+        <div id="l1Done" hidden>
+          <p class="lead soft" style="font-family:var(--f-display); font-size:clamp(1.25rem,5.8vw,1.6rem); margin-top:14px">
+            Okayyy… you caught my hearts. ❤️<br>But that’s not enough to earn forgiveness…
+          </p>
+          <div class="btn-row">
+            <button class="btn" data-go="level2">Next level →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 3 — LEVEL 2 ===================== -->
+  <section class="screen" data-screen="level2" aria-hidden="true">
+    <div class="screen__inner">
+      <div class="card">
+        <span class="mission-tag anim" style="--d:0">Level 2 of 4</span>
+        <h2 class="title anim" style="--d:1; margin-top:16px">Level 2: Our Memories</h2>
+
+        <div class="quiz-head anim" style="--d:2; margin-top:16px">
+          <span class="heart-icon" aria-hidden="true"></span>
+          <span class="q-dots" id="qDots" aria-hidden="true"></span>
+          <span class="heart-icon" aria-hidden="true"></span>
+        </div>
+
+        <h3 class="q-text anim" id="qText" style="--d:3">…</h3>
+
+        <div class="options anim" id="qOptions" style="--d:4"></div>
+
+        <p class="verdict" id="verdict" role="status" aria-live="polite"></p>
+
+        <div id="quizDone" hidden>
+          <div class="rule" role="presentation"></div>
+          <p class="lead soft" style="font-family:var(--f-display); font-size:clamp(1.3rem,6vw,1.7rem)">
+            You remember us. 🥹❤️<br><span style="font-size:.72em; color:var(--muted)">That’s a very good sign…</span>
+          </p>
+          <div class="btn-row">
+            <button class="btn" data-go="level3">Continue →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 4 — LEVEL 3 ===================== -->
+  <section class="screen" data-screen="level3" aria-hidden="true">
+    <div class="screen__inner">
+      <div class="card">
+        <span class="mission-tag anim" style="--d:0">Level 3 of 4</span>
+        <h2 class="title anim" style="--d:1; margin-top:16px">Okay… Now You Decide<br>My Punishment 😭</h2>
+
+        <div class="choices anim" id="choices" style="--d:2; margin-top:22px"></div>
+
+        <div id="choiceDone" hidden>
+          <div class="reply" id="choiceReply"></div>
+          <p class="lead" style="margin-top:18px">But there is still one final decision…</p>
+          <div class="btn-row">
+            <button class="btn" data-go="final">Final question →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 5 — FINAL ===================== -->
+  <section class="screen" data-screen="final" aria-hidden="true">
+    <div class="screen__inner">
+      <div class="card">
+        <span class="mission-tag solid anim" style="--d:0">Final level</span>
+        <h2 class="title anim" style="--d:1; margin-top:16px">Okay…<br>No more games.</h2>
+
+        <div class="rule anim" style="--d:2" role="presentation"></div>
+
+        <div class="letter anim" id="letter" style="--d:3"></div>
+
+        <h3 class="sub anim" style="--d:4; margin-top:22px">So… will you forgive me? 🥺❤️</h3>
+
+        <p class="plea anim" id="plea" role="status" aria-live="polite"></p>
+
+        <div class="ask-zone anim" id="askZone" style="--d:5">
+          <button class="btn yes" id="btnYes">YES ❤️</button>
+          <button class="btn no" id="btnNo">NO 😈</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SCREEN 6 — FORGIVEN ===================== -->
+  <section class="screen" data-screen="forgiven" aria-hidden="true">
+    <div class="screen__inner">
+      <div class="card">
+        <span class="big-heart heart-icon anim" style="--d:0" aria-hidden="true"></span>
+
+        <h1 class="display anim" style="--d:1; margin-top:10px">
+          🥹 You Forgived Me ❤️ 🥹
+        </h1>
+
+        <span class="badge anim" style="--d:2; margin-top:18px">Mission completed</span>
+
+        <div class="rule anim" style="--d:3" role="presentation"></div>
+
+        <div class="letter anim" id="thanksLetter" style="--d:4"></div>
+
+        <div class="wishlist anim" style="--d:5">
+          <div class="wish"><span class="emoji">🍫</span><span><b>Chocolate</b> — the classic apology currency</span></div>
+          <div class="wish"><span class="emoji">🤗</span><span><b>Hugs</b> — at least ten. I’ll negotiate for more</span></div>
+          <div class="wish"><span class="emoji">🥰</span><span><b>Pampering</b> — fully granted, no limit</span></div>
+          <div class="wish"><span class="emoji">❤️</span><span><b>And one very big apology kiss</b></span></div>
+        </div>
+
+        <!-- ============ OPTIONAL PHOTO SECTION ============
+             To use your own pictures, open CONFIG in the <script> below and fill
+             the `photos` array, e.g.:
+               photos: [ { src: "photos/date1.jpg", caption: "Xero Degree ☕" } ]
+             Leave it empty to keep the elegant placeholders.            -->
+        <div class="gallery anim" id="gallery" style="--d:6" role="list"></div>
+
+        <h3 class="sub anim" style="--d:7; margin-top:24px">Happy ending unlocked. ❤️</h3>
+
+        <div class="btn-row anim" style="--d:8">
+          <button class="btn ghost" id="btnAgain">Play again 😌</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ===========================================================================
+   CONFIG  ★ EDIT ONLY THIS BLOCK ★
+   =========================================================================== */
+const CONFIG = {
+
+  /* ---- names ------------------------------------------------------------ */
+  herName: "",                       // e.g. "Aisha"  → shows as "…for <name> ❤️"
+  myName:  "",                       // e.g. "Sumit"  → used in the landing sign-off
+
+  /* ---- opening --------------------------------------------------------- */
+  landingSignoff: "",                // small line under the Start button (optional)
+
+  /* ---- LEVEL 2: the quiz -----------------------------------------------
+     Edit the question / options freely. Keep `answer` as the index of the
+     correct option inside `options`. `wrong` = funny replies when she's wrong */
+  quiz: [
+    {
+      q: "Where did we first meet for a date?",
+      options: [
+        "Xero Degree near C21 Mall",
+        "That little café on Fifth Street",
+        "The park near my house"
+      ],
+      answer: 0,
+      wrong: ["Hmm… someone’s memory needs an update 😂", "Nice try 😌 But I remember everything."]
+    },
+    {
+      q: "Who wished the other person first?",
+      options: [
+        "Me first, obviously 🙄",
+        "She wished me on my birthday ❤️",
+        "We both wished at the exact same second"
+      ],
+      answer: 1,
+      wrong: ["That is historically inaccurate 😌", "Wow. Rewriting history already?"]
+    },
+    {
+      q: "What did I order for you that day?",
+      options: [
+        "A boring old Margherita 🍕",
+        "Something extremely sweet and ridiculous 🍰",
+        "A heart-shaped pizza 🍕❤️"
+      ],
+      answer: 2,
+      wrong: ["Wrong. It was cuter than that 😂", "Hmm… someone’s memory needs an update 😂"]
+    },
+    {
+      q: "And what happened after that day?",
+      options: [
+        "Nothing. We never spoke again.",
+        "We went on several more dates and somehow became something much more special. ❤️",
+        "We got lost and needed Google Maps"
+      ],
+      answer: 1,
+      wrong: ["Please. The best answer is already on screen 🥺", "Nice try 😌 But I remember everything."]
+    }
+  ],
+
+  /* ---- LEVEL 3: punishment choices ------------------------------------ */
+  punishments: [
+    { key: "A", emoji: "🍫", label: "Buy me chocolate",          reply: "Accepted. I was already planning on buying it anyway. 😌" },
+    { key: "B", emoji: "🤗", label: "Give me 10 hugs",            reply: "10? I’ll happily accept 100. 🤗" },
+    { key: "C", emoji: "❤️", label: "Unlimited pampering",        reply: "Honestly… fair punishment. ❤️" },
+    { key: "D", emoji: "😈", label: "All of the above",           reply: "Okay. I clearly have no chance of escaping this. 😭❤️" }
+  ],
+
+  /* ---- FINAL LEVEL -----------------------------------------------------
+     `apology` lines are shown one paragraph at a time in the letter box.  */
+  apology: [
+    "I know I made a mistake.",
+    "And I’m genuinely sorry.",
+    "I never want a silly mistake to make you feel less loved, less valued, or less special.",
+    "You mean a lot to me. More than I probably say properly."
+  ],
+
+  /* Funny things the NO button says while running away (one per attempt)   */
+  noButtonReplies: [
+    "Are you sure? 🥺",
+    "Think again… 😭",
+    "Please don’t do this to me 😂",
+    "I promise I’ll behave."
+  ],
+  noButtonRelabel: "Okay fine… maybe ❤️",     // text after the last dodge
+  noButtonLastWords: "…fine, fine! YES 😭",   // what it becomes on the final dodge
+
+  /* ---- FINAL SCREEN ---------------------------------------------------- */
+  thanks: [
+    "Thank you. ❤️",
+    "I know saying sorry doesn’t magically fix everything, but I really mean it.",
+    "I’ll try to be better, listen better, and most importantly… keep making you smile."
+  ],
+
+  /* ---- OPTIONAL PHOTOS -------------------------------------------------
+     [] keeps the placeholders. Add your own like:
+       photos: [
+         { src: "photos/date1.jpg",  caption: "Xero Degree ☕" },
+         { src: "photos/pizza.jpg",  caption: "The heart-shaped pizza 🍕" },
+         { src: "photos/us.jpg",     caption: "Somewhere in between ❤️" }
+       ]                                                            */
+  photos: [],
+
+  /* ---- MUSIC ------------------------------------------------------------
+     Leave empty "" → a soft romantic piano/arp loop is generated in the
+     browser (no file, nothing to break). To use your own track, paste a
+     direct .mp3 link, e.g. "https://example.com/our-song.mp3"              */
+  musicUrl: "",
+  musicVolume: 0.32
+};
+
+const TOTAL_HEARTS = 7 + CONFIG.quiz.length + 1;   // level1 + quiz answers + punishment pick
+
+
+/* ===========================================================================
+   TINY HELPERS
+   =========================================================================== */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* names injected anywhere this markup appears */
+(function applyNames(){
+  if (!CONFIG.herName && !CONFIG.myName) return;
+  const html = CONFIG.herName
+    ? `This little game was made with love for <b style="color:var(--rose)">${CONFIG.herName}</b> ❤️`
+    : `Made with love by ${CONFIG.myName} ❤️`;
+  const el = document.createElement("p");
+  el.className = "note";
+  el.style.marginTop = "18px";
+  el.innerHTML = CONFIG.landingSignoff || html;
+  const landing = document.querySelector('[data-screen="landing"] .screen__inner');
+  landing.appendChild(el);
+})();
+
+
+/* ===========================================================================
+   AMBIENT HEARTS (soft background)
+   =========================================================================== */
+(function ambient(){
+  const box = $("#ambient");
+  const colors = ["var(--pink-200)","var(--pink-300)","var(--gold)","var(--pink-100)"];
+  const n = reduceMotion ? 0 : 14;
+  for (let i = 0; i < n; i++){
+    const h = document.createElement("span");
+    h.className = "heart-icon";
+    const size = rand(9, 26);
+    h.style.cssText =
+      `left:${rand(-4, 100)}%;` +
+      `font-size:${size}px;` +
+      `--dx:${rand(-70, 70)}px;` +
+      `background:${pick(colors)};` +
+      `animation-duration:${rand(14, 26)}s;` +
+      `animation-delay:${-rand(0, 20)}s;`;
+    box.appendChild(h);
+  }
+})();
+
+
+/* ===========================================================================
+   MUSIC — Web Audio generated romantic loop (or your own mp3)
+   =========================================================================== */
+const Music = (() => {
+  let ctx = null, master = null, audio = null, timer = null, sendVerb = null;
+  let step = 0, nextTime = 0, paused = false;
+  const BPM = 70, BEAT = 60 / BPM, EIGHTH = BEAT / 2;
+
+  // Fmaj7 · Cmaj7/E · Dm7 · G7  (a soft, hopeful little loop)
+  const CHORDS = [
+    [174.61, 220.00, 261.63, 329.63],
+    [164.81, 196.00, 261.63, 329.63],
+    [146.83, 174.61, 220.00, 261.63],
+    [196.00, 246.94, 293.66, 349.23]
+  ];
+
+  function reverb(seconds = 2.4, decay = 2.6){
+    const len = Math.floor(ctx.sampleRate * seconds);
+    const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++){
+      const d = buf.getChannelData(c);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+    }
+    const conv = ctx.createConvolver(); conv.buffer = buf;
+    const wet = ctx.createGain(); wet.gain.value = 0.5;
+    conv.connect(wet).connect(master);
+    return conv;
+  }
+
+  function tone(freq, time, dur, gain, type = "sine"){
+    const o = ctx.createOscillator(); o.type = type; o.frequency.value = freq;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(gain, time + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    o.connect(g); g.connect(master);
+    if (sendVerb){ g.connect(sendVerb); }
+    o.start(time); o.stop(time + dur + 0.05);
+  }
+
+  function pad(time, dur){
+    const chord = CHORDS[Math.floor(step / 8) % CHORDS.length];
+    const filt = ctx.createBiquadFilter();
+    filt.type = "lowpass"; filt.frequency.value = 1500; filt.Q.value = 0.4;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.linearRampToValueAtTime(0.045, time + dur * 0.35);
+    g.gain.linearRampToValueAtTime(0.0001, time + dur);
+    filt.connect(g); g.connect(master); if (sendVerb) g.connect(sendVerb);
+
+    chord.forEach((f, i) => {
+      [0, +3].forEach(det => {
+        const o = ctx.createOscillator();
+        o.type = i === 0 ? "triangle" : "sine";
+        o.frequency.value = f; o.detune.value = det;
+        o.connect(filt); o.start(time); o.stop(time + dur + 0.1);
+      });
+    });
+  }
+
+  function schedule(){
+    while (nextTime < ctx.currentTime + 0.4){
+      const barStart = step % 8 === 0;
+      const chord = CHORDS[Math.floor(step / 8) % CHORDS.length];
+
+      if (barStart) pad(nextTime, BEAT * 8 * 0.98);
+
+      if (step % 2 === 0){                                   // gentle arpeggio
+        const n = [0, 1, 2, 3, 2, 1, 2, 3][(step / 2) % 8 | 0];
+        tone(chord[n] * 2, nextTime, BEAT * 1.5, 0.035, "sine");
+      }
+      if (step % 16 === 6 || step % 16 === 11){               // sparse bell melody
+        const bell = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46][(step / 5 | 0) % 6];
+        tone(bell, nextTime, BEAT * 2.6, 0.028, "triangle");
+      }
+      nextTime += EIGHTH;
+      step++;
+    }
+  }
+
+  function build(){
+    if (ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(ctx.destination);
+    sendVerb = reverb();
+  }
+
+  const api = {
+    enabled: localStorage.getItem("fm_music") !== "off",
+    started: false,
+    running: false,
+
+    async start(){
+      api.started = true;
+      if (api.running) return;
+
+      if (CONFIG.musicUrl){                                  // your own mp3
+        if (!audio){
+          audio = new Audio(CONFIG.musicUrl);
+          audio.loop = true;
+          audio.volume = CONFIG.musicVolume;
+          audio.crossOrigin = "anonymous";
+          audio.addEventListener("error", () => { api.running = false; });
+        }
+        try { await audio.play(); } catch (_){}
+        api.running = true;
+        api.sync();
+        return;
+      }
+
+      build();
+      if (!ctx) return;
+      if (ctx.state === "suspended") await ctx.resume();
+      nextTime = ctx.currentTime + 0.08;
+      step = 0;
+      paused = false;
+      clearInterval(timer);
+      timer = setInterval(schedule, 60);
+      schedule();
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setTargetAtTime(api.enabled ? CONFIG.musicVolume : 0, ctx.currentTime, 0.5);
+      api.running = true;
+      api.sync();
+    },
+
+    toggle(){
+      if (!api.started){ api.start(); return; }
+      const on = !api.enabled;
+      api.enabled = on;
+      localStorage.setItem("fm_music", on ? "on" : "off");
+      api.sync();
+      if (audio){
+        audio.volume = on ? CONFIG.musicVolume : 0;
+        if (on && !paused) audio.play().catch(() => {});
+      }
+      if (master && ctx){
+        master.gain.cancelScheduledValues(ctx.currentTime);
+        master.gain.setTargetAtTime(on ? CONFIG.musicVolume : 0, ctx.currentTime, 0.25);
+      }
+      SFX.blip(on ? 880 : 440);
+    },
+
+    /* phones lock the screen mid-song — pause instead of playing into a void */
+    pause(){
+      if (paused || !api.running) return;
+      paused = true;
+      if (audio) audio.pause();
+      if (master && ctx) master.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
+    },
+    resume(){
+      if (!paused) return;
+      paused = false;
+      if (audio && api.enabled) audio.play().catch(() => {});
+      if (master && ctx) master.gain.setTargetAtTime(api.enabled ? CONFIG.musicVolume : 0, ctx.currentTime, 0.3);
+    },
+
+    sync(){
+      const btn = $("#audioBtn");
+      btn.classList.toggle("is-on", api.enabled);
+      btn.setAttribute("aria-pressed", String(api.enabled));
+      btn.setAttribute("aria-label", api.enabled ? "Mute music" : "Unmute music");
+    },
+
+    /* stops the loop completely (only used if you ever want silence) */
+    stop(){ clearInterval(timer); timer = null; api.running = false; }
+  };
+
+  return api;
+})();
+
+
+/* ===========================================================================
+   SFX — tiny sound effects
+   =========================================================================== */
+const SFX = (() => {
+  let ctx = null, out = null;
+  function ready(){
+    if (ctx) return true;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return false;
+    ctx = new AC();
+    out = ctx.createGain(); out.gain.value = 0.5; out.connect(ctx.destination);
+    return true;
+  }
+  function note(freq, delay, dur, gain = 0.16, type = "sine", slideTo = null){
+    if (!ready()) return;
+    const t = ctx.currentTime + delay;
+    const o = ctx.createOscillator(); o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.05);
+  }
+  return {
+    unlock(){ if (ready() && ctx.state === "suspended") ctx.resume(); },
+    blip(f = 880){ note(f, 0, 0.12, 0.1, "sine"); },
+    collect(){ note(660, 0, 0.12, 0.14, "sine", 990); },
+    right(){ [523, 659, 784].forEach((f, i) => note(f, i * 0.09, 0.35, 0.13, "triangle")); },
+    wrong(){ note(300, 0, 0.26, 0.12, "triangle", 190); },
+    whoosh(){ note(520, 0, 0.28, 0.05, "sine", 980); },
+    win(){ [523, 659, 784, 1046, 1318].forEach((f, i) => note(f, i * 0.11, 0.7, 0.13, "triangle")); }
+  };
+})();
+
+
+/* ===========================================================================
+   FX CANVAS — hearts + confetti bursts
+   =========================================================================== */
+const FX = (() => {
+  const cv = $("#fx"), cx = cv.getContext("2d");
+  let parts = [], raf = null, W = 0, H = 0;
+
+  function size(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.width  = Math.floor(innerWidth  * dpr);
+    H = cv.height = Math.floor(innerHeight * dpr);
+    cv.style.width = innerWidth + "px";
+    cv.style.height = innerHeight + "px";
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    W = innerWidth; H = innerHeight;
+  }
+  addEventListener("resize", size);
+  size();
+
+  const COLORS = ["#f07ba6","#f8a8c6","#e05a89","#d6a06a","#ffcadd","#ff9dbb","#fff1f6"];
+
+  function heartPath(x, y, s, rot){
+    cx.save();
+    cx.translate(x, y); cx.rotate(rot); cx.scale(s / 24, s / 24); cx.translate(-12, -12);
+    cx.beginPath();
+    cx.moveTo(12, 21.35);
+    cx.bezierCurveTo(12, 21.35, 2, 15, 2, 8.5);
+    cx.bezierCurveTo(2, 5.42, 4.42, 3, 7.5, 3);
+    cx.bezierCurveTo(9.24, 3, 10.91, 3.81, 12, 5.09);
+    cx.bezierCurveTo(13.09, 3.81, 14.76, 3, 16.5, 3);
+    cx.bezierCurveTo(19.58, 3, 22, 5.42, 22, 8.5);
+    cx.bezierCurveTo(22, 15, 12, 21.35, 12, 21.35);
+    cx.closePath(); cx.restore();
+  }
+
+  function frame(){
+    cx.clearRect(0, 0, W, H);
+    parts = parts.filter(p => p.life > 0);
+    parts.forEach(p => {
+      p.life -= 1;
+      p.vy += p.g;
+      p.vx *= 0.995;
+      p.x += p.vx; p.y += p.vy; p.rot += p.vrot;
+      const a = Math.max(0, Math.min(1, p.life / (p.maxLife * 0.5)));
+      cx.globalAlpha = a;
+      cx.fillStyle = p.color;
+
+      if (p.type === "heart"){
+        heartPath(p.x, p.y, p.size, p.rot); cx.fill();
+      } else if (p.type === "spark"){
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot);
+        const s = p.size;
+        cx.beginPath();
+        cx.moveTo(0, -s); cx.quadraticCurveTo(0, 0, s, 0);
+        cx.quadraticCurveTo(0, 0, 0, s);
+        cx.quadraticCurveTo(0, 0, -s, 0);
+        cx.quadraticCurveTo(0, 0, 0, -s);
+        cx.fill(); cx.restore();
+      } else {
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot);
+        cx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+        cx.restore();
+      }
+    });
+    cx.globalAlpha = 1;
+    if (parts.length) raf = requestAnimationFrame(frame);
+    else { cx.clearRect(0, 0, W, H); raf = null; }
+  }
+  function run(){ if (!raf) raf = requestAnimationFrame(frame); }
+
+  function spawn(n, cfg){
+    for (let i = 0; i < n; i++){
+      const type = cfg.type === "heart" ? "heart"
+                 : Math.random() < 0.45 ? "heart"
+                 : Math.random() < 0.5 ? "spark" : "confetti";
+      parts.push({
+        type,
+        x: cfg.x !== undefined ? cfg.x + rand(-cfg.spread || -40, cfg.spread || 40) : rand(0, W),
+        y: cfg.y !== undefined ? cfg.y + rand(-30, 30) : H + 20,
+        vx: cfg.vx !== undefined ? rand(cfg.vx[0], cfg.vx[1]) : rand(-3.2, 3.2),
+        vy: cfg.vy !== undefined ? rand(cfg.vy[0], cfg.vy[1]) : rand(-13, -6),
+        g:   cfg.g !== undefined ? cfg.g : rand(0.16, 0.34),
+        size: rand(9, cfg.maxSize || 22),
+        rot: rand(0, Math.PI * 2),
+        vrot: rand(-0.16, 0.16),
+        color: pick(COLORS),
+        life: cfg.life || 170,
+        maxLife: cfg.life || 170
+      });
+    }
+    run();
+  }
+
+  return {
+    burst(x, y, n = 16, type = "heart"){ spawn(n, { x, y, type, spread: 60, life: 110, maxSize: 26 }); },
+    celebrate(){
+      spawn(70, { type: "mixed", y: H * 0.42, spread: W * 0.4, life: 260, maxSize: 26, vx: [-7, 7] });
+      setTimeout(() => spawn(40, { type: "mixed", life: 300, maxSize: 18, g: 0.09 }), 380);
+      setTimeout(() => spawn(34, { type: "mixed", life: 320, maxSize: 16, g: 0.07 }), 900);
+    }
+  };
+})();
+
+
+/* ===========================================================================
+   HUD
+   =========================================================================== */
+const HUD = (() => {
+  const el = $("#hud"), count = $("#hudCount");
+  $("#hudMax").textContent = TOTAL_HEARTS;
+  let n = 0;
+  return {
+    show(){ el.classList.add("is-shown"); },
+    add(k = 1){
+      n += k;
+      count.textContent = n;
+      count.parentElement.classList.remove("pulse");
+      void count.offsetWidth;
+      count.parentElement.classList.add("pulse");
+    },
+    reset(){ n = 0; count.textContent = 0; }
+  };
+})();
+
+
+/* ===========================================================================
+   SCREEN ROUTER
+   =========================================================================== */
+const screens = {};
+$$("[data-screen]").forEach(s => screens[s.dataset.screen] = s);
+let current = null;
+
+/* runs every time a level is opened — fill this map to add new screens */
+const ON_ENTER = {};
+
+function goTo(name){
+  const next = screens[name];
+  if (!next || next === current) return;
+  SFX.whoosh();
+  if (current){ current.classList.remove("is-active"); current.setAttribute("aria-hidden", "true"); }
+  next.scrollTop = 0;
+  void next.offsetWidth;
+  next.setAttribute("aria-hidden", "false");
+  next.classList.add("is-active");
+  current = next;
+  if (ON_ENTER[name]) ON_ENTER[name]();
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-go]");
+  if (!b) return;
+  SFX.unlock();
+  Music.start();
+  goTo(b.dataset.go);
+});
+
+
+/* ===========================================================================
+   LEVEL 1 — catch the hearts
+   =========================================================================== */
+const Level1 = (() => {
+  const zone = $("#catchZone"), countEl = $("#l1Count"), pill = $("#l1Pill"), done = $("#l1Done");
+  const NEED = 7;
+  let got = 0, spawner = null, running = false;
+  const COLORS = ["#f07ba6","#f8a8c6","#e05a89","#d6a06a","#ffc0d8"];
+
+  function spawnHeart(){
+    const h = document.createElement("div");
+    const size = rand(34, 58);
+    h.className = "fly-heart";
+    h.style.cssText =
+      `left:${rand(4, 88)}%;` +
+      `--s:${size}px;` +
+      `--c:${pick(COLORS)};` +
+      `--d:${rand(3.1, 5.2)}s;` +
+      `--sd:${rand(1.1, 2.1)}s;` +
+      `--dx:${rand(-70, 70)}px;` +
+      `--dy:${zone.offsetHeight + 110}px;` +
+      `--dr:${rand(-320, 320)}deg;`;
+
+    h.setAttribute("role", "button");
+    h.setAttribute("aria-label", "Catch heart");
+
+    const collect = e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!running || h.classList.contains("is-got")) return;
+      h.classList.add("is-got");
+      got++;
+      countEl.textContent = got;
+      SFX.collect();
+
+      const r = h.getBoundingClientRect(), z = zone.getBoundingClientRect();
+      FX.burst(r.left - z.left + r.width / 2, r.top - z.top + r.height / 2, 12, "heart");
+      HUD.add(1);
+
+      setTimeout(() => h.remove(), 340);
+
+      if (got >= NEED){
+        finish();
+      }
+    };
+    h.addEventListener("pointerdown", collect);
+    h.addEventListener("click", collect);   // keyboard / assistive-tech path
+    zone.appendChild(h);
+  }
+
+  function clearHearts(){
+    $$(".fly-heart", zone).forEach(h => {
+      h.classList.add("is-leaving");
+      setTimeout(() => h.remove(), 320);
+    });
+  }
+
+  function finish(){
+    running = false;
+    clearInterval(spawner);
+    clearHearts();
+    done.hidden = false;
+    SFX.right();
+    const r = zone.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 34, "heart");
+    setTimeout(() => { FX.celebrate(); }, 260);
+  }
+
+  return {
+    start(){
+      got = 0; countEl.textContent = 0;
+      done.hidden = true;
+      HUD.show();
+      clearInterval(spawner);
+      clearHearts();
+      running = true;
+      SFX.unlock(); Music.start();
+      setTimeout(() => {
+        if (!running) return;
+        spawnHeart();
+        spawner = setInterval(() => { if (running) spawnHeart(); }, 620);
+      }, 420);
+    },
+    reset(){ running = false; clearInterval(spawner); got = 0; countEl.textContent = 0; clearHearts(); },
+    stop(){ running = false; clearInterval(spawner); }
+  };
+})();
+
+
+/* ===========================================================================
+   LEVEL 2 — the memory quiz
+   =========================================================================== */
+const Level2 = (() => {
+  const qText = $("#qText"), box = $("#qOptions"), verdict = $("#verdict"),
+        dots = $("#qDots"), done = $("#quizDone");
+  let i = 0;
+
+  function renderDots(){
+    dots.innerHTML = "";
+    CONFIG.quiz.forEach((_, k) => {
+      const d = document.createElement("i");
+      if (k < i) d.className = "ok";
+      if (k === i) d.className = "on";
+      dots.appendChild(d);
+    });
+  }
+
+  function say(msg, moody = false){
+    verdict.textContent = msg;
+    verdict.classList.toggle("moody", moody);
+    verdict.classList.add("is-shown");
+  }
+
+  function render(){
+    const q = CONFIG.quiz[i];
+    renderDots();
+    verdict.classList.remove("is-shown");
+    qText.textContent = q.q;
+    qText.classList.remove("shake"); void qText.offsetWidth; qText.classList.add("shake");
+    box.innerHTML = "";
+
+    /* options are shuffled for replay value, but each one remembers its ORIGINAL
+       index — otherwise `answer` would point at a different option each play */
+    shuffle(q.options.map((text, original) => ({ text, original })))
+      .forEach((o, k) => {
+        const b = document.createElement("button");
+        b.className = "opt";
+        b.innerHTML = `<span class="bullet">${"ABCDEF"[k]}</span><span>${o.text}</span>`;
+        b.addEventListener("click", () => answer(b, o.original === q.answer, q));
+        box.appendChild(b);
+      });
+  }
+
+  function answer(btn, ok, q){
+    if (btn.classList.contains("is-right")) return;   // ignore double taps
+    if (ok){
+      btn.classList.add("is-right");
+      say("Correct ❤️");
+      SFX.right();
+      HUD.add(1);
+      $$(".opt", box).forEach(o => o.setAttribute("disabled", ""));
+      const r = btn.getBoundingClientRect();
+      FX.burst(r.left + r.width / 2, r.top + r.height / 2, 18, "heart");
+
+      setTimeout(() => {
+        i++;
+        if (i >= CONFIG.quiz.length){ finish(); } else { render(); }
+      }, 1150);
+    } else {
+      btn.classList.add("is-wrong");
+      setTimeout(() => btn.classList.remove("is-wrong"), 500);
+      const wrongs = q.wrong && q.wrong.length ? q.wrong : ["Hmm… someone's memory needs an update 😂"];
+      say(pick(wrongs), true);
+      SFX.wrong();
+    }
+  }
+
+  function finish(){
+    renderDots();
+    done.hidden = false;
+    qText.textContent = "Every single one. 🥹";
+    verdict.classList.remove("is-shown");
+    SFX.win();
+    setTimeout(() => FX.celebrate(), 200);
+  }
+
+  return {
+    start(){
+      i = 0; done.hidden = true;
+      SFX.unlock(); Music.start();
+      HUD.show();
+      render();
+    }
+  };
+})();
+
+
+/* ===========================================================================
+   LEVEL 3 — choose my punishment
+   =========================================================================== */
+const Level3 = (() => {
+  const box = $("#choices"), reply = $("#choiceReply"), done = $("#choiceDone");
+
+  function render(){
+    box.innerHTML = "";
+    CONFIG.punishments.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "choice";
+      b.innerHTML =
+        `<span class="emoji">${c.emoji}</span>` +
+        `<span class="txt">${c.label}</span>` +
+        `<span class="key">${c.key}</span>`;
+      b.addEventListener("click", () => choose(b, c));
+      box.appendChild(b);
+    });
+  }
+
+  function choose(btn, c){
+    if (!done.hidden) return;                       // one punishment only 😌
+    $$(".choice", box).forEach(b => b.setAttribute("disabled", ""));
+    btn.classList.add("is-picked");
+    reply.textContent = c.reply;
+    done.hidden = false;
+    HUD.add(1);
+    SFX.right();
+    const r = btn.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 20, "heart");
+  }
+
+  return {
+    start(){
+      done.hidden = true;
+      SFX.unlock(); Music.start();
+      HUD.show();
+      render();
+    }
+  };
+})();
+
+
+/* ===========================================================================
+   FINAL — the forgiveness test
+   =========================================================================== */
+const Final = (() => {
+  const letter = $("#letter"), plea = $("#plea"), zone = $("#askZone"),
+        yes = $("#btnYes"), no = $("#btnNo");
+  let dodges = 0, relabelled = false;
+
+  function typeLetter(){
+    letter.innerHTML = CONFIG.apology
+      .map((p, k) => `<p class="anim" style="--d:${k + 4}">${p}</p>`)
+      .join("");
+  }
+
+  /* Authoritative placement: keeps the NO button inside the ask-zone AND off
+     the YES button, measured from the live rect so a late label change (which
+     re-wraps and resizes the button) can never push it out of bounds.
+     `.btn.no` is centred with translateX(-50%), so CSS `left` is the CENTRE. */
+  function clampNo(){
+    const z = zone.getBoundingClientRect();
+    const zw = zone.clientWidth, zh = zone.clientHeight;
+    const r = no.getBoundingClientRect();
+    const w = r.width, h = r.height;
+
+    let l = Math.max(6, Math.min(r.left - z.left, zw - w - 6));
+    let t = Math.max(6, Math.min(r.top  - z.top,  zh - h - 6));
+
+    const yr = yes.getBoundingClientRect();
+    const pad = 6;
+    const yL = yr.left - z.left, yR = yr.right - z.left;
+    const yT = yr.top  - z.top,  yB = yr.bottom - z.top;
+    const overlaps = !(l + w <= yL - pad || l >= yR + pad ||
+                       t + h <= yT - pad || t >= yB + pad);
+    if (overlaps){
+      const below = yB + pad;
+      if (below + h <= zh - 6){
+        t = below;                                   // slide under YES
+      } else if (yL - pad - w >= 6){
+        l = yL - pad - w; t = Math.min(t, zh - h - 6); // tuck to its left
+      } else if (yR + pad + w <= zw - 6){
+        l = yR + pad; t = Math.min(t, zh - h - 6);     // tuck to its right
+      } else {
+        t = Math.max(6, Math.min(yB + pad, zh - h - 6)); // tight screens
+      }
+    }
+
+    no.style.transition = "none";
+    no.style.left = (l + w / 2) + "px";   // CSS left is the button centre
+    no.style.top  = t + "px";
+    void no.offsetWidth;
+    no.style.transition = "";
+  }
+
+  function centreNo(){
+    no.style.transition = "none";
+    no.style.left = "50%";
+    void no.offsetWidth;
+    no.style.transition = "";
+    clampNo();
+  }
+
+  function moveNo(){
+    const w = zone.clientWidth, h = zone.clientHeight;
+    const bw = no.offsetWidth, bh = no.offsetHeight;
+    const minX = Math.min(bw / 2 + 6, w / 2);
+    const maxX = Math.max(minX, w - bw / 2 - 6);
+    const minY = 6, maxY = Math.max(minY, h - bh - 6);
+
+    no.style.transition = "none";
+    no.style.left = rand(minX, maxX) + "px";
+    no.style.top  = rand(minY, maxY) + "px";
+    void no.offsetWidth;
+    no.style.transition = "";
+    clampNo();
+
+    no.classList.add("shake");
+    setTimeout(() => no.classList.remove("shake"), 500);
+    SFX.wrong();
+
+    const r = no.getBoundingClientRect();
+    FX.burst(r.left + r.width / 2, r.top + r.height / 2, 8, "spark");
+  }
+
+  function onNo(){
+    dodges++;
+
+    if (dodges <= CONFIG.noButtonReplies.length){
+      plea.textContent = CONFIG.noButtonReplies[dodges - 1];
+      moveNo();
+      if (dodges === CONFIG.noButtonReplies.length){
+        relabelled = true;
+        setTimeout(() => { no.textContent = CONFIG.noButtonRelabel; centreNo(); }, 420);
+      }
+      return;
+    }
+
+    if (relabelled){
+      relabelled = false;
+      plea.textContent = CONFIG.noButtonLastWords;
+      no.textContent = "YES 😭";
+      moveNo();
+      setTimeout(centreNo, 420);
+      return;
+    }
+
+    // she finally clicked the "yes" 😌
+    plea.textContent = "FINALLY. I love you. ❤️";
+    no.style.opacity = "0";
+    no.style.pointerEvents = "none";
+    win();
+  }
+
+  function win(){
+    SFX.win();
+    setTimeout(() => FX.celebrate(), 120);
+    setTimeout(() => {
+      $("#gallery").innerHTML = "";
+      buildGallery();
+      goTo("forgiven");
+    }, 900);
+  }
+
+  yes.addEventListener("click", () => { SFX.unlock(); Music.start(); win(); });
+  no.addEventListener("click", onNo);
+
+  /* she rotated her phone mid-chase — keep the button reachable */
+  addEventListener("resize", () => {
+    if (no.style.left && no.style.left !== "50%") moveNo();
+  });
+
+  return {
+    start(){
+      dodges = 0; relabelled = false;
+      plea.textContent = "";
+      no.textContent = "NO 😈";
+      no.style.opacity = "1";
+      no.style.pointerEvents = "";
+      centreNo();
+      typeLetter();
+      $("#thanksLetter").innerHTML =
+        CONFIG.thanks.map((p, k) => `<p class="anim" style="--d:${k}">${p}</p>`).join("");
+      SFX.unlock(); Music.start();
+      HUD.show();
+    }
+  };
+})();
+
+
+/* ===========================================================================
+   PHOTO GALLERY (optional)
+   =========================================================================== */
+function buildGallery(){
+  const g = $("#gallery");
+  g.innerHTML = "";
+  const photos = (CONFIG.photos || []).filter(p => p && p.src);
+
+  if (photos.length){
+    photos.forEach(p => {
+      const fig = document.createElement("figure");
+      fig.className = "shot";
+      fig.setAttribute("role", "listitem");
+      fig.innerHTML =
+        `<img src="${p.src}" alt="${p.caption || "Us"}" loading="lazy" />` +
+        (p.caption ? `<figcaption>${p.caption}</figcaption>` : "");
+      fig.querySelector("img").addEventListener("error", () => {
+        fig.className = "shot empty";
+        fig.innerHTML = `<span class="heart-icon"></span><span>photo not found<br>(add it to /photos)</span>`;
+      });
+      g.appendChild(fig);
+    });
+  } else {
+    for (let k = 0; k < 3; k++){
+      const fig = document.createElement("figure");
+      fig.className = "shot empty";
+      fig.setAttribute("role", "listitem");
+      fig.innerHTML = `<span class="heart-icon"></span><span>your photo ${k + 1}<br>goes here 📷</span>`;
+      g.appendChild(fig);
+    }
+  }
+}
+
+
+/* ===========================================================================
+   BOOT
+   =========================================================================== */
+Object.assign(ON_ENTER, {
+  level1: () => Level1.start(),
+  level2: () => Level2.start(),
+  level3: () => Level3.start(),
+  final:  () => Final.start()
+});
+
+$("#audioBtn").addEventListener("click", () => {
+  SFX.unlock();
+  Music.toggle();
+});
+
+$("#btnAgain").addEventListener("click", () => {
+  SFX.win();
+  Level1.reset();
+  HUD.reset();
+  goTo("landing");
+});
+
+// first screen visible
+screens.landing.classList.add("is-active");
+screens.landing.setAttribute("aria-hidden", "false");
+current = screens.landing;
+
+Music.sync();
+
+// she switched apps / locked the phone — pause the music, don't kill it
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) Music.pause();
+  else Music.resume();
+});
+
+// nothing should ever scroll the page itself
+addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("touchmove", e => {
+  const el = e.target;
+  if (el && el.closest && el.closest(".screen.is-active")) return;   // inner screens scroll freely
+  e.preventDefault();
+}, { passive: false });
+</script>
+</body>
+</html>
